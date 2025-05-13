@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+
+    header {
+      background-color: #3f51b5;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      background-color: #303f9f;
+    }
+
+    nav ul li {
+      margin: 0 15px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .module {
+      display: none;
+      padding: 20px;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .tabs {
+      margin-bottom: 10px;
+    }
+
+    .tabs button {
+      padding: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+      border: none;
+      background-color: #c5cae9;
+    }
+
+    .tabs button.active-tab {
+      background-color: #3f51b5;
+      color: white;
+    }
+
+    form, .view-list, .delete-section {
+      margin-top: 20px;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Library Management System</h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a onclick="showModule('book-module')">Book Module</a></li>
+      <li><a onclick="showModule('member-module')">Member Module</a></li>
+    </ul>
+  </nav>
+
+  <!-- Book Module -->
+  <div id="book-module" class="module">
+    <div class="tabs">
+      <button onclick="showTab('book', 'add')" class="active-tab">Add Book</button>
+      <button onclick="showTab('book', 'delete')">Delete Book</button>
+      <button onclick="showTab('book', 'view')">View Books</button>
+    </div>
+
+    <div id="book-add">
+      <h3>Add Book</h3>
+      <form onsubmit="addBook(event)">
+        <input type="text" id="book-title" placeholder="Book Title" required>
+        <input type="text" id="book-author" placeholder="Author" required>
+        <button type="submit">Add Book</button>
+      </form>
+    </div>
+
+    <div id="book-delete" style="display:none">
+      <h3>Delete Book</h3>
+      <input type="text" id="delete-book-title" placeholder="Enter Book Title">
+      <button onclick="deleteBook()">Delete</button>
+    </div>
+
+    <div id="book-view" style="display:none">
+      <h3>Book List</h3>
+      <ul id="book-list"></ul>
+    </div>
+  </div>
+
+  <!-- Member Module -->
+  <div id="member-module" class="module">
+    <div class="tabs">
+      <button onclick="showTab('member', 'add')" class="active-tab">Add Member</button>
+      <button onclick="showTab('member', 'delete')">Delete Member</button>
+      <button onclick="showTab('member', 'view')">View Members</button>
+    </div>
+
+    <div id="member-add">
+      <h3>Add Member</h3>
+      <form onsubmit="addMember(event)">
+        <input type="text" id="member-name" placeholder="Member Name" required>
+        <input type="text" id="member-id" placeholder="Member ID" required>
+        <button type="submit">Add Member</button>
+      </form>
+    </div>
+
+    <div id="member-delete" style="display:none">
+      <h3>Delete Member</h3>
+      <input type="text" id="delete-member-id" placeholder="Enter Member ID">
+      <button onclick="deleteMember()">Delete</button>
+    </div>
+
+    <div id="member-view" style="display:none">
+      <h3>Member List</h3>
+      <ul id="member-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    let books = [];
+    let members = [];
+
+    function showModule(moduleId) {
+      document.getElementById('book-module').classList.remove('active');
+      document.getElementById('member-module').classList.remove('active');
+      document.getElementById(moduleId).classList.add('active');
+    }
+
+    function showTab(module, tab) {
+      ['add', 'delete', 'view'].forEach(action => {
+        document.getElementById(`${module}-${action}`).style.display = action === tab ? 'block' : 'none';
+        const buttons = document.querySelectorAll(`#${module}-module .tabs button`);
+        buttons.forEach(btn => btn.classList.remove('active-tab'));
+        buttons[['add','delete','view'].indexOf(tab)].classList.add('active-tab');
+      });
+      if (tab === 'view') module === 'book' ? renderBooks() : renderMembers();
+    }
+
+    // Book functions
+    function addBook(e) {
+      e.preventDefault();
+      const title = document.getElementById('book-title').value;
+      const author = document.getElementById('book-author').value;
+      books.push({ title, author });
+      localStorage.setItem('books', JSON.stringify(books));
+      e.target.reset();
+    }
+
+    function deleteBook() {
+      const title = document.getElementById('delete-book-title').value;
+      books = books.filter(book => book.title !== title);
+      localStorage.setItem('books', JSON.stringify(books));
+      renderBooks();
+    }
+
+    function renderBooks() {
+      const list = document.getElementById('book-list');
+      list.innerHTML = books.map(b => `<li><strong>${b.title}</strong> by ${b.author}</li>`).join('');
+    }
+
+    // Member functions
+    function addMember(e) {
+      e.preventDefault();
+      const name = document.getElementById('member-name').value;
+      const id = document.getElementById('member-id').value;
+      members.push({ name, id });
+      localStorage.setItem('members', JSON.stringify(members));
+      e.target.reset();
+    }
+
+    function deleteMember() {
+      const id = document.getElementById('delete-member-id').value;
+      members = members.filter(m => m.id !== id);
+      localStorage.setItem('members', JSON.stringify(members));
+      renderMembers();
+    }
+
+    function renderMembers() {
+      const list = document.getElementById('member-list');
+      list.innerHTML = members.map(m => `<li><strong>${m.name}</strong> (ID: ${m.id})</li>`).join('');
+    }
+
+    window.onload = () => {
+      const storedBooks = localStorage.getItem('books');
+      const storedMembers = localStorage.getItem('members');
+      if (storedBooks) books = JSON.parse(storedBooks);
+      if (storedMembers) members = JSON.parse(storedMembers);
+      renderBooks();
+      renderMembers();
+      showModule('book-module');
+    };
+  </script>
+</body>
+</html>
